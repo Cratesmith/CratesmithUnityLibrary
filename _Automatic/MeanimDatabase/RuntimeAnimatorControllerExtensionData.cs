@@ -17,7 +17,11 @@ public class ControllerState
 
 public enum ControllerParameterType
 {
+	#if UNITY_4_2
 	Vector,
+	#else
+	Trigger,
+	#endif
 	Float,
 	Int,
 	Bool
@@ -47,7 +51,7 @@ public class Controller
 public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 {
 	[SerializeField] Controller[] controllers;
-		
+	
 	static RuntimeAnimatorControllerExtensionData _instance = null;	
 	static RuntimeAnimatorControllerExtensionData Instance 
 	{
@@ -77,8 +81,8 @@ public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 			return Instance._controllersTable;
 		}
 	}	
-		
-#if UNITY_EDITOR
+	
+	#if UNITY_EDITOR
 	[UnityEditor.Callbacks.PostProcessScene]
 	static void BuildTable()
 	{
@@ -94,7 +98,7 @@ public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 		{
 			var ac = (UnityEditorInternal.AnimatorController)UnityEditor.AssetDatabase.LoadAssetAtPath(i, typeof(UnityEditorInternal.AnimatorController));
 			if(!ac) continue;
-		
+			
 			var entry = new Controller();
 			list.Add(entry);
 			entry.controller = ac;
@@ -110,14 +114,19 @@ public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 	{
 		switch(paramType)
 		{
-			case UnityEditorInternal.AnimatorControllerParameterType.Bool: 		return ControllerParameterType.Bool;
-			case UnityEditorInternal.AnimatorControllerParameterType.Float: 	return ControllerParameterType.Float;
-			case UnityEditorInternal.AnimatorControllerParameterType.Vector: 	return ControllerParameterType.Vector;
-			case UnityEditorInternal.AnimatorControllerParameterType.Int: 		return ControllerParameterType.Int;
+		case UnityEditorInternal.AnimatorControllerParameterType.Bool: 		return ControllerParameterType.Bool;
+		case UnityEditorInternal.AnimatorControllerParameterType.Float: 	return ControllerParameterType.Float;
+			#if UNITY_4_2
+		case UnityEditorInternal.AnimatorControllerameterType.Vector: 		return ControllerParameterType.Vector;
+			#else 
+		case UnityEditorInternal.AnimatorControllerParameterType.Trigger: 		return ControllerParameterType.Trigger;
+			#endif
+		case UnityEditorInternal.AnimatorControllerParameterType.Int: 		return ControllerParameterType.Int;
+			
 		}
 		throw new System.Exception("Unknown type");
 	}
-#endif
+	#endif
 	
 	public static IEnumerable<ControllerParameter> GetParameters(RuntimeAnimatorController rac)
 	{
