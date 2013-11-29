@@ -14,8 +14,9 @@ public class CustomAssetBuilder : AssetPostprocessor
 	static System.Type[] EnumerateAssetTypes()
 	{
 		var assembly = System.Reflection.Assembly.GetAssembly(typeof(CustomAsset));
+		var editorAssembly = System.Reflection.Assembly.GetAssembly(typeof(CustomAssetBuilder));
 		return (
-			from t in assembly.GetTypes() 
+			from t in assembly.GetTypes().Concat(editorAssembly.GetTypes()).Distinct() 
 			where t.IsSubclassOf(typeof(CustomAsset)) || t.GetCustomAttributes(typeof(CustomAssetAttribute),true).Length>0
 			select t
 			).Cast<System.Type>().ToArray();
@@ -46,9 +47,12 @@ public class CustomAssetBuilder : AssetPostprocessor
 			
 			var name = Path.GetFileNameWithoutExtension(path);
 			var type = typeof(CustomAsset).Assembly.GetType(name, false, true);
-			if(type==null || !type.IsSubclassOf(typeof(ScriptableObject)))
-				continue;
+			var editorType = typeof(CustomAssetBuilder).Assembly.GetType(name, false, true);
+			if( (editorType==null||!editorType.IsSubclassOf(typeof(ScriptableObject))) 
+			   	&& (type==null||!type.IsSubclassOf(typeof(ScriptableObject))) )
+			     continue;
 			
+			Debug.Log(path+" contains asset type, rebuilding");
 			Generate();
 			break;
 		}
@@ -76,8 +80,8 @@ public class CustomAssetBuilder : AssetPostprocessor
 		string dllName = aName.Name+".dll";
 		
 		// cleanup, remove existing dlls and ensure the output directory exists 
-		System.IO.File.Delete("Assets/Plugins/Editor/"+dllName);
 		System.IO.Directory.CreateDirectory(dirName);
+		System.IO.File.Delete("Assets/Plugins/Editor/"+dllName);
 
         AssemblyBuilder ab = 
             System.AppDomain.CurrentDomain.DefineDynamicAssembly(
