@@ -10,9 +10,9 @@ using System.Collections.Generic;
 [System.Serializable]
 public class ControllerState
 {
+	public int uniqueNameHash;
 	public string uniqueName;
 	public string name;
-	public int hash;
 }
 
 public enum ControllerParameterType
@@ -28,6 +28,15 @@ public enum ControllerParameterType
 }
 
 [System.Serializable]
+public class ControllerStateMachine
+{
+	public string name;
+	public int hash;
+	public ControllerState[] 			states;
+	public ControllerStateMachine[] 	subStateMachines;
+}
+
+[System.Serializable]
 public class ControllerParameter
 {
 	public string name;
@@ -35,12 +44,20 @@ public class ControllerParameter
 }
 
 [System.Serializable]
+public class ControllerLayer
+{
+	public string name;
+	public int hash;
+	public ControllerStateMachine 		stateMachine;
+}
+
+[System.Serializable]
 public class Controller
 {
 	public RuntimeAnimatorController 	controller;
-	public ControllerState[] 			states;
+	//public ControllerState[] 			states;
 	public ControllerParameter[]		parameters;
-	public string[]						layers;
+	public ControllerLayer[]			layers;
 }
 
 //
@@ -93,7 +110,6 @@ public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 		var table = obj.AddComponent<RuntimeAnimatorControllerExtensionData>();
 		
 		var list = new List<Controller>();
-		
 		foreach(var i in UnityEditor.AssetDatabase.GetAllAssetPaths().Where(j => System.IO.Path.GetExtension(j).ToLower()==".controller"))
 		{
 			var ac = (UnityEditorInternal.AnimatorController)UnityEditor.AssetDatabase.LoadAssetAtPath(i, typeof(UnityEditorInternal.AnimatorController));
@@ -101,14 +117,24 @@ public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 			
 			var entry = new Controller();
 			list.Add(entry);
-			entry.controller = ac;
-			entry.layers 	 = ac.EnumerateLayers().Select((arg) => arg.name).ToArray();
-			entry.parameters = ac.EnumerateParameters().Select((param) => new ControllerParameter() { name = param.name, type = ConvertParameterType(param.type)}).ToArray();
-			entry.states	 = ac.EnumerateStatesRecursive().Select((arg) => new ControllerState() { name = arg.name, uniqueName = arg.stateMachine.name+"."+arg.name, hash = Animator.StringToHash(arg.stateMachine.name+"."+arg.name)}).ToArray();
+			entry.controller 	= ac;
+			entry.parameters 	= ac.EnumerateParameters().Select((param) => new ControllerParameter() { name = param.name, type = ConvertParameterType(param.type)}).ToArray();
+			var states	 	= ac.EnumerateStatesRecursive().Select((arg) => new ControllerState() { name = arg.name, uniqueName = arg.uniqueName, uniqueNameHash = arg.uniqueNameHash}).ToArray();
+			entry.layers 	 	= ac.EnumerateLayers().Select((arg) => new ControllerLayer() {name = arg.name, hash=Animator.StringToHash(arg.name), stateMachine = ConverStateMachine(arg.stateMachine, states)}).ToArray();
 		}
 		
 		table.controllers = list.ToArray();
 	}	
+
+	static ControllerStateMachine ConverStateMachine(UnityEditorInternal.StateMachine stateMachine, ControllerState[] states)
+	{
+		return new ControllerStateMachine() {
+			name = stateMachine.name,
+			hash = Animator.StringToHash(stateMachine.name),
+			states = states.Where(i => stateMachine.EnumerateStates().Any(j => j.uniqueNameHash==i.uniqueNameHash)).ToArray(),
+			subStateMachines = Enumerable.Range(0, stateMachine.stateMachineCount).Select(i => ConverStateMachine(stateMachine.GetStateMachine(i),states)).ToArray()
+		};
+	}
 	
 	static ControllerParameterType ConvertParameterType(UnityEditorInternal.AnimatorControllerParameterType paramType)
 	{
@@ -137,10 +163,19 @@ public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 	public static IEnumerable<ControllerState> GetStates(RuntimeAnimatorController rac)
 	{
 		var controller = ControllersTable[rac];
-		return controller.states.AsEnumerable();
+		return controller.layers.SelectMany(i => GetStatesRecursive(i.stateMachine));
 	}
-	
-	public static IEnumerable<string> GetLayers(RuntimeAnimatorController rac)
+
+	public static IEnumerable<ControllerState> GetStatesRecursive(ControllerStateMachine sm)
+	{
+		foreach(var i in sm.states.AsEnumerable())
+			yield return i;
+
+		foreach(var i in sm.subStateMachines.SelectMany(i => GetStatesRecursive(i)))
+			yield return i;
+	}
+
+	public static IEnumerable<ControllerLayer> GetLayers(RuntimeAnimatorController rac)
 	{
 		var controller = ControllersTable[rac];
 		return controller.layers.AsEnumerable();
@@ -158,6 +193,14 @@ public class RuntimeAnimatorControllerExtensionData : MonoBehaviour
 #if UNITY_EDITOR
 public static class AnimationControllerExtensions
 {
+	public static IEnumerable<UnityEditorInternal.State> EnumerateStates(this UnityEditorInternal.StateMachine sm) 
+	{
+		for(int i=0; i<sm.stateCount; ++i)
+		{
+			yield return sm.GetState(i);
+		}
+	}
+
 	public static IEnumerable<UnityEditorInternal.State> EnumerateStatesRecursive(this UnityEditorInternal.AnimatorController ac)
 	{
 		for(int i=0; i<ac.layerCount;++i)
@@ -170,10 +213,8 @@ public static class AnimationControllerExtensions
 	
 	public static IEnumerable<UnityEditorInternal.State> EnumerateStatesRecursive(this UnityEditorInternal.StateMachine sm) 
 	{
-		for(int i=0; i<sm.stateCount; ++i)
-		{
-			yield return sm.GetState(i);
-		}
+		foreach(var i in EnumerateStates(sm))
+			yield return i;
 		
 		for(int i=0; i<sm.stateMachineCount; ++i)
 		{
