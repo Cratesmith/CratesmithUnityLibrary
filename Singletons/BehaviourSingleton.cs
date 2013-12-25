@@ -14,20 +14,14 @@ public class BehaviourSingleton<T> : MonoBehaviour where T:Component
 		shuttingDown = true;
 	}
 	
-	public virtual void OnEnable()
+	protected virtual void Awake()
 	{
 		T comp = this.GetComponent<T>();
 		if(instance == null)
 			instance = comp;
 	}
 	
-	public virtual void OnDisable()
-	{
-		if(instance == this)
-			instance = null;
-	}
-	
-	public virtual void OnDestroy()
+	protected virtual void OnDestroy()
 	{
 		if(instance == this)
 			instance = null;
@@ -42,13 +36,11 @@ public class BehaviourSingleton<T> : MonoBehaviour where T:Component
 			else 
 				instance =  (T)GameObject.FindObjectOfType(typeof(T));
 		
-			/*
 			if(instance == null && Application.isPlaying && !shuttingDown)
 			{
 				GameObject obj = new GameObject(typeof(T).Name);
 				instance = obj.AddComponent<T>();
 			}
-			*/
 			
 			return instance;
 		}

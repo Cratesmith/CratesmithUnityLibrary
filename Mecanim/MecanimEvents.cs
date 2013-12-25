@@ -51,7 +51,7 @@ public class MecanimUpgrade : MonoBehaviour
 	void HandleOneShot ()
 	{
 		var animator = GetComponent<Animator>();		
-		var nextState = animator.GetStates().FirstOrDefault((arg) => arg.hash == animator.GetNextAnimatorStateInfo(0).nameHash);
+		var nextState = animator.GetStates().FirstOrDefault((arg) => arg.uniqueNameHash == animator.GetNextAnimatorStateInfo(0).nameHash);
 		
 		if(nextState==null)
 			return;
