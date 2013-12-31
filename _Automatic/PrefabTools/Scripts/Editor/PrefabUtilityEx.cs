@@ -62,7 +62,7 @@ public static class PrefabUtilityEx
 			return false;
 		}
 		
-    	var mods = GetPropertyModifications(obj, thisObjectOnly);
+    	//var mods = GetPropertyModifications(obj, thisObjectOnly);
     	bool isValueOverriden = HasPropertyModifications(obj, thisObjectOnly);
     	bool isComponentAdded = false;
 		
@@ -108,7 +108,7 @@ public static class PrefabUtilityEx
 		}
 		else
 		{
-			var prefab = GetRootPrefab(obj);
+			//var prefab = GetRootPrefab(obj);
 			var modsArray = PrefabUtility.GetPropertyModifications(obj);
 			mods.AddRange(modsArray!=null ? modsArray:new PropertyModification[0]);
 		}
@@ -199,7 +199,7 @@ public static class PrefabUtilityEx
 	static GameObject[] GetAllChildren(GameObject obj)
 	{
 		var children = new List<GameObject>(new GameObject[] {obj});
-		for(int i=0; i<obj.transform.GetChildCount(); ++i)
+		for(int i=0; i<obj.transform.childCount; ++i)
 		{
 			children.AddRange(GetAllChildren(obj.transform.GetChild(i).gameObject));
 		}

@@ -208,7 +208,7 @@ public sealed class PrefabIcons
 		
 		if(result)
 		{
-			var prefab = PrefabUtility.GetPrefabParent(gameObject);
+			//var prefab = PrefabUtility.GetPrefabParent(gameObject);
 			//var selection = Selection.objects;
 			Selection.objects = new[] { gameObject };
 //			PrefabMenu.missingComponentToRemove = removedObjectOnPrefab;

@@ -162,8 +162,9 @@ public class Pool : BehaviourSingleton<Pool>
         poolTables[prefab] = otherTable;
 	}
     
-    public void Awake()
-    {
+    protected override void Awake ()
+	{
+		base.Awake ();
 		foreach (Preallocation preallocation in preallocations)
 		{
 			DoPreallocate(preallocation.prefab, preallocation.count);

@@ -26,7 +26,7 @@ public class MecanimUpgrade : MonoBehaviour
 		var animator = GetComponent<Animator>();	
 		animator.SetBool(boolParamName, true);
 		
-		System.Action callbacks = null;
+		//System.Action callbacks = null;
 		if(oneShotCallbacks.ContainsKey(boolParamName))
 			oneShotCallbacks[boolParamName] += callback;
 		else 
