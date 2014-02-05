@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
 
-public class SelectionHistory : EditorWindow
+public class SelectionHistory : ScriptableObject
 {
 	List<HashSet<Object>> selectionHistory = new List<HashSet<Object>>();
 	static SelectionHistory instance = ScriptableObject.CreateInstance<SelectionHistory>();
