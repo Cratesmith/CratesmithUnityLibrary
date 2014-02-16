@@ -198,6 +198,7 @@ public class Pool : BehaviourSingleton<Pool>
     
     public static void Despawn(GameObject obj)
     {
+		Debug.Log("Despawn: "+obj.name);
         if (Instance)
         {
             Instance.DoDespawn(obj);
