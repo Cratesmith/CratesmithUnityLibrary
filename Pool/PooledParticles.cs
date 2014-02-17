@@ -45,14 +45,17 @@ public class PooledParticles : MonoBehaviour
 		ProcessAutodestroy();
         
         foreach(var e in emitOnStart)
+		{
+			if(!e) continue;
             e.emit = true;
+		}
         
         updateCount = 0;
 
 		ParticleSystem[] shuriken = GetComponentsInChildren<ParticleSystem>();
 		foreach(var i in shuriken)
 		{
-			Debug.Log("clearing particles in "+i.name);
+//			Debug.Log("clearing particles in "+i.name);
 			i.Clear(true);
 		}
 	}
@@ -61,7 +64,7 @@ public class PooledParticles : MonoBehaviour
 	{
 		foreach(var a in animators)
 		{
-			if(!a.autodestruct || !a.particleEmitter)
+			if(!a || !a.autodestruct || !a.particleEmitter)
 				continue;
 			
 			a.autodestruct = false;
@@ -85,7 +88,7 @@ public class PooledParticles : MonoBehaviour
 		ProcessAutodestroy();			
 		foreach(var e in autoStopEmitters)
 		{
-			if(e.particleCount > 0)
+			if(!e || e.particleCount > 0)
 				continue;
 			
 			if(e.emit)

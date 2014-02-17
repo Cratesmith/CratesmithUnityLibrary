@@ -68,7 +68,7 @@ public class PoolTable
             
             obj.transform.position = position;
             obj.transform.rotation = rotation;
-			
+			obj.transform.parent = null;
 			
 			if(obj.rigidbody)
 			{
@@ -127,7 +127,7 @@ public class PoolTable
 		if(!despawnQueue.Contains(obj) && obj != null)
         {
             obj.SetActive(false);
-            obj.transform.parent = null;
+            obj.transform.parent = Pool.Instance.transform;
             obj.hideFlags = HideFlags.HideInHierarchy;
             
 			despawnQueue.Add(obj);
