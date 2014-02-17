@@ -232,15 +232,15 @@ public class Pool : BehaviourSingleton<Pool>
         
         return null;
     }
-    
-	public static void Despawn(PoolRef obj) 
-    {
-        if (Instance)
-        {
-            Instance.DoDespawn(obj.Ref);
-        }
-    }
-	
+
+	public static void Despawn<T>(GameObject obj)
+	{
+		if (Instance)
+		{
+			Instance.DoDespawn(obj);
+		}
+	}
+
     public static void Despawn<T>(T obj) where T : Component
     {
         if (Instance)
