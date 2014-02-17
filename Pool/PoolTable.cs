@@ -27,7 +27,7 @@ public class PoolTable
 	{
 		 GameObject obj = (GameObject)GameObject.Instantiate(prefab, position, rotation);
 
-		if(obj.GetComponentInChildren<ParticleEmitter>() != null)
+		if(obj.GetComponentInChildren<ParticleEmitter>() != null || obj.GetComponentInChildren<ParticleSystem>() != null)
 			PooledParticles.Apply(obj);
 		
 		return obj;
@@ -123,8 +123,7 @@ public class PoolTable
 	
 	public void Despawn(GameObject obj)
 	{
-        //Debug.Log("Despawning: " + obj.name);
-        
+        //Debug.Log("Despawning: " + obj.name);  
 		if(!despawnQueue.Contains(obj) && obj != null)
         {
             obj.SetActive(false);

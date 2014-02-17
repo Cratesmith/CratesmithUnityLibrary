@@ -48,6 +48,13 @@ public class PooledParticles : MonoBehaviour
             e.emit = true;
         
         updateCount = 0;
+
+		ParticleSystem[] shuriken = GetComponentsInChildren<ParticleSystem>();
+		foreach(var i in shuriken)
+		{
+			Debug.Log("clearing particles in "+i.name);
+			i.Clear(true);
+		}
 	}
 	
 	private void ProcessAutodestroy()
